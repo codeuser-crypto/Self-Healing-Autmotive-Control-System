@@ -1,6 +1,6 @@
 # Self-Healing Automotive Control System with Runtime Fault Detection and Autonomous Recovery using QNX RTOS
 
-> A fault-tolerant automotive software architecture built on QNX RTOS that simulates real world Electronic Control Units (ECUs), performs runtime fault detection and automatically recovers failed modules using a watchdog based self healing mechanism.
+> A fault tolerant automotive software architecture built on QNX RTOS that simulates real world Electronic Control Units (ECUs), performs runtime fault detection and automatically recovers failed modules using a watchdog based self healing mechanism.
 
 ## Overview
 
