@@ -1,127 +1,345 @@
-TITLE :- Self-Healing Automotive Control System with Runtime Fault Detection and Autonomous Recovery using QNX RTOS
+# Self-Healing Automotive Control System with Runtime Fault Detection and Autonomous Recovery using QNX RTOS
 
-My project explores ideas that industry is moving toward, especially self-healing architectures for future software defined vehicles.
+> A fault-tolerant automotive software architecture built on QNX RTOS that simulates real world Electronic Control Units (ECUs), performs runtime fault detection and automatically recovers failed modules using a watchdog based self healing mechanism.
 
-Automotive Control System → Software controlling vehicle subsystems
-Self-Healing → System detects failures and recovers automatically; NVIDIA, Tesla
-Runtime Fault Detection → Faults detected while system is running
-Autonomous Recovery → System restarts or fixes modules without human intervention
-RTOS → Real-Time Operating System (Advantage - real time scheduling, fault isolation, message passing architecture)
-ASIL-D certification :- Automotive Safety Integrity Level - D
+## Overview
 
-There are 50-150 ECUs (braking, steering, engine - fuel injection and ignition, airbag etc) if one ECU fails; vehicle safety is compromised, system crashes, driver may lose control (braking ECU crash :- brakes do not respond, steering ECU crash :-  loss of steering/cruise control). My project works on this.
+Modern vehicles contain 50–150 Electronic Control Units (ECUs) responsible for critical functions such as braking, steering, engine control, airbags and Advanced Driver Assistance Systems (ADAS). Failure of a single ECU can compromise vehicle safety and system reliability.
 
-PHASE 1  :-
-Part 1 → ECU modules
-Part 2 → ECU communication + system flow
-PHASE 2 :-
-Part 3 → Health Monitoring
-Part 4 → Fault Detection
-Part 5 → Self Healing Recovery
+This project demonstrates a modular automotive control system where independent ECU processes communicate in real time and a watchdog supervisor continuously monitors system health. When a fault occurs, the system automatically detects the failure and restores the affected ECU without human intervention, showcasing a self-healing architecture for future Software Defined Vehicles (SDVs).
 
-PHASE 1 :-
-Running order :-
-Each ECU runs as an independent process and compiled, similar to real automotive architecture
-sensor_ecu - generates vehicle data, simulates vehicle sensors
-control_ecu - makes safety decisions, reads sensor data. Example :- ADAS Controller
-brake_ecu - simulates braking systems. Example :- ABS
-steering_ecu - simulates steering adjustment, collision avoidance. Example :- Electronic Steering
-logger_ecu - records system events, tracking
+---
 
-Sensor ECU -> Speed:80 Distance:91 Steering:10 (This means the sensor ECU is generating real-time vehicle data)
+## Key Features
 
-Control ECU -> EMERGENCY BRAKE (9 m)
-Control ECU -> SAFE (65 m)
-This means the control ECU is reading the sensor distance and making decisions.
-logic :-
-distance > 40  → SAFE
-20 < distance ≤ 40 → WARNING
-distance ≤ 20 → EMERGENCY BRAKE
+### Modular ECU Architecture
 
-Logger -> Speed:33 Distance:17 Action:2
-Logger -> Speed:81 Distance:95 Action:0
-This proves shared memory communication is working, because the logger is reading the same data produced by the sensor and processed by control.
-logic :-
-0 = SAFE
-1 = WARNING
-2 = BRAKE
+* Independent ECU processes
+* Real-time data exchange
+* Automotive-inspired software design
+* Fault isolation between modules
 
-Each program uses:
-while(1)
-This simulates continuous real-time vehicle operation. In real cars, ECUs run as long as the vehicle is powered.
+### Runtime Fault Detection
 
-SYSTEM FLOW :-                                             EXAMPLE :-
-Sensor ECU    Radar / Camera sensors                       Sensor → Distance = 17
-Control ECU   ADAS Control ECU                             Control → EMERGENCY BRAKE
-Brake ECU     Steering ECU                                 Brake ECU → Apply brake
-Logger ECU    Vehicle network logging                      Logger → Action = 2
+* Continuous ECU health monitoring
+* Heartbeat based supervision
+* Failure detection during operation
+* Real time fault identification
 
-Steering or Brake less print :- Steering ECU runs only when action = WARNING
-Brake ECU runs only when action = BRAKE. If distance stays high, they will not print.
+### Autonomous Recovery
 
-Real systems use:
-CAN bus
-Automotive Ethernet
-AUTOSAR architecture
+* Automatic ECU restart
+* Watchdog based supervision
+* Continuous system availability
+* Reduced downtime
 
-My project uses:
-1. Shared memory
-2. Simplified decision logic
-3. Multi process ECU simulation
-4. Sensor processing
-5. Control logic
-6. Centralized logging
-ECUs communicate using shared memory. ECU A -> sends data -> ECU B
+### Automotive System Simulation
 
-Examples :-
-Mercedes-Benz / BMW / Volkswagen - AUTOSAR allows: modular ECU software, communication between ECUs and fault tolerant automotive systems
-[modular ECU architecture]
-2. Tesla - Autopilot, Sensor fusion, braking and steering control
-Instead of hundreds of independent ECUs, they are moving toward software-defined vehicles with centralized control computers.
-[It shows the distributed architecture that older vehicles used, which is still widely deployed]
+* Sensor processing
+* Control decision logic
+* Braking subsystem
+* Steering subsystem
+* Centralized event logging
 
+### QNX RTOS Concepts
 
-PHASE 2 :-
+* Real time scheduling
+* Process isolation
+* Inter process communication
+* Shared memory communication
 
-Brake ECU crashes
+---
+
+# System Architecture
+
+```text
+Sensor ECU
+     │
+     ▼
+Control ECU
+     │
+ ┌───┴───┐
+ ▼       ▼
+Brake   Steering
+ ECU      ECU
+     │
+     ▼
+ Logger ECU
+     │
+     ▼
+Watchdog Supervisor
+```
+
+Each ECU runs as an independent process similar to real automotive architectures used in modern vehicles.
+
+---
+
+# ECU Modules
+
+## Sensor ECU
+
+Simulates vehicle sensors by generating:
+
+* Vehicle speed
+* Obstacle distance
+* Steering angle
+
+Example:
+
+```text
+Speed: 80 km/h
+Distance: 17 m
+Steering: 10°
+```
+
+---
+
+## Control ECU
+
+Processes sensor information and determines vehicle actions.
+
+Decision Logic:
+
+```text
+Distance > 40m      → SAFE
+20m < Distance ≤ 40m → WARNING
+Distance ≤ 20m      → EMERGENCY BRAKE
+```
+
+---
+
+## Brake ECU
+
+Simulates:
+
+* ABS-style braking actions
+* Emergency braking responses
+* Collision avoidance support
+
+---
+
+## Steering ECU
+
+Simulates:
+
+* Steering corrections
+* Collision avoidance adjustments
+* ADAS steering assistance
+
+---
+
+## Logger ECU
+
+Records:
+
+* Sensor values
+* Vehicle actions
+* Safety decisions
+* System events
+
+---
+
+# Inter ECU Communication
+
+The ECUs communicate using shared memory.
+
+```text
+Sensor ECU
+     │
+     ▼
+Shared Memory
+     │
+     ▼
+Control ECU
+     │
+     ▼
+Brake / Steering ECU
+     │
+     ▼
+Logger ECU
+```
+
+This architecture demonstrates real time communication between multiple automotive software components.
+
+---
+
+# Phase 1 – Automotive Control System
+
+Implemented:
+
+* ECU process architecture
+* Shared memory communication
+* Sensor data generation
+* Decision-making logic
+* Braking simulation
+* Steering simulation
+* Centralized logging
+
+The system continuously runs using infinite execution loops similar to real automotive ECUs that remain active while the vehicle is powered on.
+
+---
+
+# Phase 2 – Self Healing Architecture
+
+A watchdog supervisor continuously monitors ECU health using heartbeat signals.
+
+When an ECU stops responding:
+
+```text
+Brake ECU Failure
+        │
+        ▼
+Heartbeat Timeout
+        │
+        ▼
+Watchdog Detects Failure
+        │
+        ▼
+Automatic ECU Restart
+        │
+        ▼
+System Restored
+```
+
+This demonstrates autonomous software recovery without requiring manual intervention.
+
+---
+
+# Why Self Healing?
+
+Most automotive systems today are designed to be fail-safe.
+
+## Fail Safe
+
+```text
+Brake ECU Failure
         ↓
-System detects failure
+Disable Function
         ↓
-Watchdog restarts Brake ECU
+Warning Light
+```
+
+Advantages:
+
+* Simple
+* Reliable
+
+Limitation:
+
+* Functionality is lost
+
+---
+
+## Fail Operational
+
+```text
+Primary ECU Failure
         ↓
-Braking continues normally
+Backup ECU Activated
+        ↓
+Operation Continues
+```
 
-Bosch develops redundant and fault tolerating braking systems. Ex :- Electronic Stability Control.
-Tesla Autopilot uses multiple processors and sensors.
-Waymo (Google self driving)
-still on fail safe, not self healing
+Advantages:
 
-Better :-
-Self Healing Architecture
-Modular ECU
-Fault Monitoring Design
-Transparent Logging System
-Easy Simulation Environment
-Future SDV (Software Defined Vehicle) :- Tesla, Hyundai, NVIDIA, Qualcomm, Volkswagen
+* No service interruption
 
-Most current automotive systems are fail-safe, meaning they shut down a subsystem when a fault occurs. My project explores a self-healing architecture where the system can detect faults and recover automatically. This concept is important for future autonomous and software defined vehicles where continuous operation and reliability are critical.
+Limitation:
 
-Difference between my model and others :- 
-1. Fail Safe :- A system detects a fault and moves to a safe state by shutting down or disabling functionality. Example :- Brake ECU fault -> ABS disabled -> Driver warning light...simple, reliable...system capability reduced, autonomous vehicles cannot rely
-Toyota, Honda, Ford, Hyundai, Nissan etc. (((Disable Feature)))
-2. Fail Operational :- If one system fails, another redundant system takes over. Example :- Primary ECU fails -> Backup ECU takes control, Airbus...extremely reliable, no loss...my project recovers software instead of hardware redundancy.
-Bosch, Merc, BMW, Volkswagen etc.         (((Backup System)))
-3. Hypervisor :- A hypervisor isolates multiple software systems running on the same hardware.
-Tesla, BMW, Merc, Qualcomm etc.           (((Isolate Systems)))
-4. Supervisor :- A supervisor monitors system health.
-Bosch, Denso etc.                         (((Monitors Systems)))
-5. Self Healing :- A self healing system detects faults, diagnoses the failed software component, and automatically restores it without requiring backup hardware or human intervention.
+* Requires redundant hardware
 
-Future Vehicles require autonomous driving, always reliable system, remote software updates. These systems cannot simply disable features when faults occur. They must recover automatically.
+---
 
-Flow:-
-Brake ECU crashes -> Watchdog detects no heartbeat  -> Watchdog restarts Brake ECU  -> Brake ECU continues working
+## Self-Healing (This Project)
 
-Fail Safe :- Brake ECU failed, System entering Safe mode, Braking disabled (Brake ECU FAILED - System entering SAFE MODE - Braking disabled) no recovery; function lost
-Fail Operational :- Primary Brake ECU failed, Switching to Backup Brake ECU, Backup ECU active (Not repaired, Just switched to backup)
-In my system, when an ECU like the brake module fails, a watchdog detects the failure using heartbeat timeout and automatically restarts the ECU process. Unlike fail-safe systems that disable functionality or fail-operational systems that rely on backup hardware, my system restores the failed module itself, ensuring continuous operation. This demonstrates a self-healing software-defined automotive architecture.
+```text
+Brake ECU Failure
+        ↓
+Watchdog Detection
+        ↓
+Automatic Restart
+        ↓
+Function Restored
+```
+
+Advantages:
+
+* No backup hardware required
+* Lower cost
+* Automatic recovery
+* Continuous operation
+
+Unlike fail safe systems that disable functionality or fail operational systems that rely on redundant hardware, this project restores the failed ECU itself.
+
+---
+
+# Technologies Used
+
+### Operating System
+
+* QNX RTOS
+
+### Programming
+
+* C
+
+### Automotive Concepts
+
+* ECU Architecture
+* ADAS Control Logic
+* Watchdog Supervision
+* Heartbeat Monitoring
+* Fault Detection
+* Process Recovery
+
+### Communication
+
+* Shared Memory IPC
+
+---
+
+# Industry Relevance
+
+The project explores concepts increasingly adopted in modern Software Defined Vehicles (SDVs).
+
+Related industry directions:
+
+* Autonomous Driving
+* Centralized Vehicle Computing
+* Runtime Health Monitoring
+* Over the Air Updates
+* Self Healing Architectures
+* Safety Critical Systems
+
+Companies exploring similar future architectures include Tesla, NVIDIA, Qualcomm, Volkswagen, Hyundai, Bosch and Waymo.
+
+---
+
+# Future Enhancements
+
+* CAN Bus Integration
+* Automotive Ethernet
+* AUTOSAR Support
+* Hypervisor-Based Isolation
+* ASIL-D Safety Extensions
+* Redundant Controllers
+* Predictive Fault Detection
+* OTA Software Updates
+* Distributed Vehicle Control
+
+---
+
+# Learning Outcomes
+
+This project demonstrates practical implementation of:
+
+* Real-Time Operating Systems
+* Automotive Software Architecture
+* Multi-Process System Design
+* Inter-Process Communication
+* Fault Detection Mechanisms
+* Watchdog-Based Monitoring
+* Autonomous Recovery Systems
+* Software Defined Vehicle Concepts
+* Safety-Critical Embedded Systems
+A QNX RTOS-based automotive software project demonstrating runtime fault detection, watchdog supervision, and autonomous ECU recovery for future Software Defined Vehicles.
